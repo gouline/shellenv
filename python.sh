@@ -1,5 +1,8 @@
 #!/bin/bash
 
+alias python=python3
+alias pip=pip3
+
 # Shortcut to create and activate Python virtual environment in ./.venv
 # Takes Python version as optional argument or falls back on .python-version or PYTHON_VERSION
 python-venv() {
