@@ -54,3 +54,9 @@ python-venv() {
         uv pip install -r "$file"
     done
 }
+
+# Parse JSON using built-in Python
+# Example: echo '{"username":"blah","password":"anotherblah"}' | python-json "password"
+python-json() {
+    python3 -c "import json,sys; print(json.load(sys.stdin)['$1'])"
+}
