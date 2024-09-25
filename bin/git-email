@@ -4,30 +4,12 @@
 #
 # Usage:
 #
-#   1. Fill in your email addresses by aliases in the case statement below
-
-case $1 in
-
-  gh | github | github.com)
-    email=1234567+username@users.noreply.github.com
-    ;;
-
-  *)
-    echo "ERROR: no email found for '$1'"
-    exit 1
-    ;;
-
-esac
-
-#   2. Generate GPG keys for all emails (https://docs.github.com/en/github/authenticating-to-github/managing-commit-signature-verification)
-#       (alternatively, you can disable signing by setting the below to 0)
+#   1. Generate GPG keys for all emails
+#   2. Add directory to your $PATH
+#   3. Execute in a git repository OR a directory with git repositories: git email <ALIAS>
+#
 
 ENABLE_COMMIT_SIGNING=1
-
-#   3. Make this script executable: chmod +x git-email
-#   4. Move it to somewhere in your $PATH
-#   5. Execute in a git repository OR a directory with git repositories: git email <ALIAS>
-#
 
 config_email() {
   email=$1
@@ -60,6 +42,13 @@ config_repo() {
     read -p "Confirm configuring user.email=$email on repository \"$dir\"? " -n 1 -r
     (cd "$dir" && config_email "$email" && config_sign "$email")
 }
+
+
+email=$( gpg --list-keys "$1" 2> /dev/null | grep "^uid" | awk -v RS=\< -v FS=\> 'NR>1{print $1}' | head -n 1 )
+if [ ! "$email" ]; then
+    echo "Missing GPG key: $1"
+    exit 1
+fi
 
 if [ -d "./.git" ]; then
     config_repo "$email" "."
