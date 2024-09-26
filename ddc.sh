@@ -28,24 +28,35 @@ ddc_set_input() {
         "HDMI-1") input_dec=17 ;;
         "HDMI-2") input_dec=18 ;;
         "USB-C") input_dec=27 ;;
-        *) echo "Unknown input: $input_name"; exit 404;
+        *) echo "Unknown input: $input_name"; exit 404
     esac
 
-    if test -x $HOME/.local/bin/lunar; then
-        # macOS (https://lunar.fyi/)
-
-        if $HOME/.local/bin/lunar displays "$display_model"; then
-            $HOME/.local/bin/lunar displays "$display_model" input "$input_dec"
-        fi
-    elif command -v ddcutil 2>&1 >/dev/null; then
+    if command -v ddcutil 2>&1 > /dev/null; then
         # Linux / Windows (https://www.ddcutil.com/)
 
         input_hex=$( printf "x%02X" $input_dec | tr '[:upper:]' '[:lower:]' )
-
         current=$( ddcutil --model "$display_model" --terse getvcp 60 2>/dev/null | cut -d' ' -f4 )
         if [[ "$current" != "" && "$current" != "$input_hex" ]]; then
-            echo Setting $display_model input to $input_hex
+            echo "Setting $display_model input to $input_hex (ddcutil)"
             ddcutil --model "$display_model" setvcp 60 "$input_hex"
+        fi
+    elif command -v m1ddc 2>&1 > /dev/null; then
+        # macOS (https://github.com/waydabber/m1ddc)
+
+        display_index=$( m1ddc display list | grep "$display_model" | awk -v RS=\[ -v FS=\] 'NR>1{print $1}' | head -n 1 )
+        if [ "$display_index" ]; then
+            current=$( m1ddc display $display_index get input )
+            if [[ "$current" != "" && "$current" != "$input_dec" ]]; then
+                echo "Setting $display_model input to $input_dec (m1ddc)"
+                m1ddc display $display_index set input $input_dec
+            fi
+        fi
+    elif command -v lunar 2>&1 > /dev/null; then
+        # macOS (https://lunar.fyi/)
+
+        if lunar displays "$display_model"; then
+            echo "Setting $display_model input to $input_dec (lunar)"
+            lunar displays "$display_model" input "$input_dec"
         fi
     fi
 }
