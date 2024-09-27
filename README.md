@@ -5,9 +5,7 @@ Useful shell and environment utils
 Sourced from `.zshrc` or `.bash_profile`:
 
 ```sh
-if [ -d "$HOME/workspace/shellenv" ]; then
-    source "$HOME/workspace/shellenv/python.sh"
-    source "$HOME/workspace/shellenv/env.sh"
-    source "$HOME/workspace/shellenv/aws.sh"
-fi
+SHELLENV_HOME="$HOME/workspace/shellenv"
+test -f "$SHELLENV_HOME/python.sh" && source "$SHELLENV_HOME/python.sh"
+test -f "$SHELLENV_HOME/env.sh" && source "$SHELLENV_HOME/env.sh"
 ```
