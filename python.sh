@@ -35,31 +35,31 @@ python-venv() {
 
 # Extension for python-venv to install packages for any package manager it finds
 python-venv-install() {
-    python-venv
+    python-venv $@
 
     # uv
     find . -name "uv.lock" ! -path "./.venv/**" | while IFS= read -r file; do
         echo "uv synchronizing $file..."
-        ( cd $( dirname -- "$file" ) ; uv sync --freeze )
+        ( cd $( dirname -- "$file" ) ; uv sync --freeze $UV_ARGS )
     done
 
     # poetry
     find . -name "poetry.lock" ! -path "./.venv/**" | while IFS= read -r file; do
         poetry config virtualenvs.create false
         echo "poetry installing $file..."
-        ( cd $( dirname -- "$file" ) ; poetry install --sync --no-root --all-extras )
+        ( cd $( dirname -- "$file" ) ; poetry install --sync --no-root --all-extras $POETRY_ARGS )
     done
 
     # setup.py
     find . -name "setup.py" ! -path "./.venv/**" | while IFS= read -r file; do
         echo "setup installing $file..."
-        uv pip install -e $( dirname -- "$file" )
+        uv pip install -e $( dirname -- "$file" ) $PIP_ARGS
     done
 
     # requirements.txt
     find . -name "requirements*.txt" ! -path "./.venv/**" | while IFS= read -r file; do
         echo "requirements installing $file"
-        uv pip install -r "$file"
+        uv pip install -r "$file" $PIP_ARGS
     done
 }
 
