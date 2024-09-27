@@ -31,6 +31,11 @@ python-venv() {
         echo "activating venv..."
         . .venv/bin/activate
     fi    
+}
+
+# Extension for python-venv to install packages for any package manager it finds
+python-venv-install() {
+    python-venv
 
     # uv
     find . -name "uv.lock" ! -path "./.venv/**" | while IFS= read -r file; do
