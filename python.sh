@@ -68,3 +68,11 @@ python-venv-install() {
 python-json() {
     python3 -c "import json,sys; print(json.load(sys.stdin)['$1'])"
 }
+
+# Interactive Python shell in Docker
+python-docker() {
+    docker run --rm -it \
+        -w /app \
+        -v .:/app \
+        python:$1 ${@:2}
+}
