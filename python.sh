@@ -40,7 +40,7 @@ python-venv-install() {
     # uv
     find . -name "uv.lock" ! -path "./.venv/**" | while IFS= read -r file; do
         echo "uv synchronizing $file..."
-        ( cd $( dirname -- "$file" ) ; uv sync --freeze $UV_ARGS )
+        ( cd $( dirname -- "$file" ) ; uv sync --frozen $UV_ARGS )
     done
 
     # poetry
