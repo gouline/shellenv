@@ -1,0 +1,7 @@
+#!/bin/sh
+
+for dir in ./**/.git; do 
+    root_dir=$( dirname $dir )
+    echo $root_dir
+    ( cd $root_dir ; git pull )
+done
