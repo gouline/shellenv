@@ -22,5 +22,16 @@ if [ -f $HOME/.aws/config ]; then
         fi
     }
 
-    complete -W "`sed -nE 's:^\[profile (.+)\]$:\1:p' $HOME/.aws/config | tr '\n' ' '`" aws-profile
+    _aws_profiles() {
+        sed -nE 's:^\[profile (.+)\]$:\1:p' $HOME/.aws/config | tr '\n' ' '
+    }
+
+    if [[ -n $ZSH_VERSION ]]; then
+        _aws_profiles_comp() {
+            _arguments "1: :($(_aws_profiles))"
+        }
+        compdef _aws_profiles_comp aws-profile
+    elif [[ -n $BASH_VERSION ]]; then
+        complete -W "`_aws_profiles`" aws-profile
+    fi
 fi
