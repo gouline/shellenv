@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # AWS profile switcher
 # Set AWS_PROFILE_ASSUME=1 to assume role (requires jq)
 if [ -f $HOME/.aws/config ]; then

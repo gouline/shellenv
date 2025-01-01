@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # NVIDIA Settings Loader
 # Instructions:
 #   1. Run nvidia-settings and configure screens as you like

@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Switches input for display (by model)
 # Example: ddc_set_input "DELL U2715H" "DisplayPort-1"
 # Example: ddc_set_input "DELL G2724D" "HDMI-1"
