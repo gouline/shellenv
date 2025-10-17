@@ -1,0 +1,103 @@
+#!/bin/bash
+
+# Check if application name is provided
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 <application_name>"
+    exit 1
+fi
+
+APP_NAME="$1"
+
+# Get memory usage for all matching processes
+# Use ps to get process list with memory in KB
+# awk to:
+# 1. Match process names case-insensitively using whole word matching
+# 2. Print each matching process and sum up RSS (Resident Set Size) memory
+
+OUTPUT=$(ps -A -o rss=,comm= | awk -v app="$APP_NAME" '
+BEGIN {
+    total = 0
+    # Convert app name to lowercase for case-insensitive matching
+    app_lower = tolower(app)
+}
+{
+    # Extract RSS (first field) and command (rest of line)
+    rss = $1
+    cmd = ""
+    for (i=2; i<=NF; i++) {
+        cmd = cmd $i
+        if (i < NF) cmd = cmd " "
+    }
+
+    # Get the base name of the command (remove path)
+    n = split(cmd, parts, "/")
+    basename = parts[n]
+
+    # Convert basename and full path to lowercase
+    basename_lower = tolower(basename)
+    cmd_lower = tolower(cmd)
+
+    # Check for whole word match using word boundaries in both basename and full path
+    # Split basename into words on common delimiters (space, hyphen, underscore, parentheses, etc.)
+    # This allows "chrome" to match "Chrome Helper", "chrome_helper", etc.
+    matched = 0
+
+    # First check the basename
+    num_words = split(basename_lower, words, /[ \-_()\.]+/)
+    for (w=1; w<=num_words; w++) {
+        if (words[w] == app_lower) {
+            matched = 1
+            break
+        }
+    }
+
+    # If not matched in basename, check the full path
+    if (!matched) {
+        num_path_words = split(cmd_lower, path_words, /[\/\-_() .]+/)
+        for (w=1; w<=num_path_words; w++) {
+            if (path_words[w] == app_lower) {
+                matched = 1
+                break
+            }
+        }
+    }
+
+    if (matched) {
+        total += rss
+        printf "%d|%s|%s\n", rss, basename, cmd
+    }
+}
+END {
+    printf "TOTAL|%d\n", total
+}')
+
+# Extract the total from the output
+TOTAL_KB=$(echo "$OUTPUT" | grep "^TOTAL|" | cut -d'|' -f2)
+
+# Print individual processes
+echo "$OUTPUT" | grep -v "^TOTAL|" | while IFS='|' read -r rss_kb process_name process_path; do
+    if [ "$rss_kb" -lt 1024 ]; then
+        printf "  %s: %d KB\n" "$process_name" "$rss_kb"
+    elif [ "$rss_kb" -lt 1048576 ]; then
+        rss_mb=$((rss_kb / 1024))
+        printf "  %s: %d MB\n" "$process_name" "$rss_mb"
+    else
+        rss_gb=$((rss_kb / 1048576))
+        printf "  %s: %d GB\n" "$process_name" "$rss_gb"
+    fi
+    printf "    %s\n" "$process_path"
+done
+
+echo ""
+
+# Format output based on size
+echo -n "Total: "
+if [ "$TOTAL_KB" -lt 1024 ]; then
+    echo "${TOTAL_KB} KB"
+elif [ "$TOTAL_KB" -lt 1048576 ]; then
+    TOTAL_MB=$((TOTAL_KB / 1024))
+    echo "${TOTAL_MB} MB"
+else
+    TOTAL_GB=$((TOTAL_KB / 1048576))
+    echo "${TOTAL_GB} GB"
+fi
