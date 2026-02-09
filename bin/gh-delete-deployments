@@ -1,0 +1,12 @@
+#!/bin/bash
+#
+# Deletes all deployments for a GitHub repository.
+# Source: https://github.com/orgs/community/discussions/85000#discussioncomment-9284450
+#
+
+REPO=$1
+
+for ID in $(gh api -X GET /repos/$REPO/deployments | jq -r ".[] | .id"); do
+  echo "Deleting deployment $ID"
+  gh api -X DELETE /repos/$REPO/deployments/$ID | jq '.'
+done

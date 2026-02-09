@@ -1,0 +1,29 @@
+#!/bin/bash
+#
+# Collection of GCP utilities.
+#
+
+project=`gcloud config get-value project`
+
+terraform_service_account="terraform@${project}.iam.gserviceaccount.com"
+
+function activate {
+    echo "Activating environment..."
+    gcloud iam service-accounts enable "$terraform_service_account"
+}
+
+function deactivate {
+    echo "Deactivating environment..."
+    gcloud iam service-accounts disable "$terraform_service_account"
+}
+
+# Main
+
+commands=`declare -F | awk '{print $NF}' | egrep -v "^_" `
+for command in $commands; do
+    if [ "$1" = "$command" ]; then
+        $command ${@:2}
+        exit 0
+    fi
+done
+echo "Error: command '$1' not found in [" $commands "]"
