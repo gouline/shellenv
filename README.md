@@ -2,10 +2,16 @@
 
 Useful shell and environment utils
 
-Sourced from `.zshrc` or `.bash_profile`:
+Sourced from `~/.config/fish/config.fish`:
 
-```sh
-SHELLENV_HOME="$HOME/workspace/shellenv"
-test -f "$SHELLENV_HOME/python.sh" && source "$SHELLENV_HOME/python.sh"
-test -f "$SHELLENV_HOME/env.sh" && source "$SHELLENV_HOME/env.sh"
+```fish
+set SHELLENV_HOME "$HOME/workspace/shellenv"
+if test -d $SHELLENV_HOME
+    fish_add_path "$SHELLENV_HOME/bin"
+    for module in env python
+        if test -f "$SHELLENV_HOME/$module.fish"
+            source "$SHELLENV_HOME/$module.fish"
+        end
+    end
+end
 ```
